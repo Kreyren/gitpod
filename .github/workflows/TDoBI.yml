@@ -1,0 +1,15 @@
+name: The Denier of blank issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Naturalclar/issue-action@v1.0.0
+        with:
+          # https://regex101.com/r/Zkrcgv/2
+          regEx: "^### Describe the bug\n<!-- A clear and concise description of what the bug is -->\n\n### Steps to reproduce\n<!-- Steps to reproduce the behavior -->\n\n### Expected behavior\n<!-- A clear and concise description of what you expected to happen -->\n\n### Additional information\n<!-- For instance, workspace IDs; URLs; relevant logs from terminals or the browser's devtool console -->\n\n### Example repository\n<!-- For instance, the repository where the error occurred -->"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
