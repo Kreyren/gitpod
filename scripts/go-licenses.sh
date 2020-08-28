@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "test!"
+
 if [ "A$GITHUB_TOKEN" = "A" ]; then
     printf '%s\n' "Please set the GITHUB_TOKEN env var to a personal access token. Otherwise this script won't work."
     exit 1
