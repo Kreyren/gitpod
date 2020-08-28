@@ -3,7 +3,7 @@ name: Dockerfile
 # Relevant to events - https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows
 on: 
   pull_request:
-    types: [ready_for_review]
+    types: [ ready_for_review ]
     paths:
     - '**.Dockerfile'
     - '**.dockerfile'
