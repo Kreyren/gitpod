@@ -20,9 +20,9 @@ jobs:
           # Install git
           if ! command -v git 1>/dev/null; then
             # Check if we can install git, sync if not
-            if ! apt-cache search hadolint | grep -qP "^git/.*"; then
+            if ! apt list git | grep -qP "^git/.*"; then
               apt-get update
-            elif apt-cache search hadolint | grep -qP "^git/.*"; then
+            elif apt list git | grep -qP "^git/.*"; then
               true
             else
               exit 250
@@ -38,13 +38,13 @@ jobs:
           # Install Hadolint
           if ! command -v hadolint 1>/dev/null; then
             # Check if we need to apt update
-            if ! apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+            if ! apt list hadolint | grep -qP "^hadolint/.*"; then
               apt-get update
 
               # Check if target apt distro provides hadolint
-              if apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+              if apt list hadolint | grep -qP "^hadolint/.*"; then
                 apt-get install hadolint --yes
-              elif ! apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+              elif ! apt list hadolint | grep -qP "^hadolint/.*"; then
                 # Check if we have curl
                 if command -v curl 1>/dev/null; then
                   true
@@ -93,7 +93,7 @@ jobs:
               else
                 exit 250
               fi
-            elif apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+            elif apt list hadolint | grep -qP "^hadolint/.*"; then
               apt-get install hadolint --yes
             else
               exit 250
