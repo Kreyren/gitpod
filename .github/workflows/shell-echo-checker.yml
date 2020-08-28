@@ -25,6 +25,7 @@ jobs:
           ## NOTICE: Do not use for loop to avoid pitfall https://mywiki.wooledge.org/BashPitfalls#pf1
           git --git-dir="$GITHUB_WORKSPACE/.git" ls-files -z -- '*.bash' | while IFS= read -rd '' file; do
               printf "Checking file %s for command 'echo'..\\n" "$file"
+              # Check if echo is present
               if grep -q "echo " "$file"; then
                 printf 'WARNING: %s\n' "File '$file' contains command 'echo' which is non-standard and breaks the runtime on platforms like Darwin, see https://unix.stackexchange.com/a/65819 for more info"
                 exit 1
