@@ -54,6 +54,15 @@ jobs:
                   exit 250
                 fi
 
+                # Check if we have wget
+                if command -v wget 1>/dev/null; then
+                  true
+                elif ! command -v wget 1>/dev/null; then
+                  apt-get install wget --yes || exit 1
+                else
+                  exit 250
+                fi
+
                 # https://regex101.com/r/FueTCm/1
                 githubApiLatest="$(curl https://api.github.com/repos/hadolint/hadolint/releases/latest 2>/dev/null)"
                 latestRelease="$(printf '%s\n' "$githubApiLatest" | grep tag_name | sed -E "s#^\s+\"\w+\"\:\s+\"v([^\"]+).*#\1#gm")"
@@ -73,7 +82,7 @@ jobs:
                   if [ -s /usr/bin/hadolint ]; then
                     break
                   elif [ ! -f /usr/bin/hadolint ] && [ ! -s /usr/bin/hadolint ]; then
-                    curl -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v$latestRelease/hadolint-Linux-x86_64 || true
+                    wget https://github.com/hadolint/hadolint/releases/download/v$latestRelease/hadolint-Linux-x86_64 -o /usr/bin/hadolint || true
                   else
                     exit 250
                   fi
