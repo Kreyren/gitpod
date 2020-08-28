@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:stable
     steps:
-      - uses: actions/checkout@v2
       - name: Installing dependencies..
         shell: bash
         run: |
@@ -100,7 +99,8 @@ jobs:
               exit 250
             fi
           fi
-        
+      - name: Pulling git dir..
+        uses: actions/checkout@v2
       - name: Linting..
         # Make sure that bash is used
         shell: bash
