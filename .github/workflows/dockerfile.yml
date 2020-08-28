@@ -12,20 +12,77 @@ jobs:
   # Linting
   lint:
     runs-on: ubuntu-latest
+    container: debian:stable
     steps:
       - uses: actions/checkout@v2
+      -
       - name: Installing dependencies..
+        shell: bash
         run: |
-          # Fix untill hadolint it available by downstream
-          if ! apt-cache search hadolint | grep -qP "^hadolint -"; then
-            # Install hadolint if not already installed through apt
-            if ! apt list --installed | grep -qP "^hadolint -"; then
-              if ! apt-cache search hadolint | grep -qP "^hadolint -.*"; then { if command -v wget >/dev/null; then apt install -y wget; fi ;} && wget https://github.com/hadolint/hadolint/releases/download/v1.17.5/hadolint-Linux-x86_64 -O /usr/bin/hadolint && { [ ! -x hadolint ] && chmod +x /usr/bin/hadolint ;}; elif apt-cache search hadolint | grep -qP "^hadolint -.*"; then apt install -y hadolint; fi
+          # Check if we need to apt update
+          if ! apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+            apt-get update
+
+            # Check if target apt distro provides hadolint
+            if apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+              apt-get install hadolint --yes
+            elif ! apt-cache search hadolint | grep -qP "^hadolint/.*"; then
+              # Check if we have curl
+              if command -v curl 1>/dev/null; then
+                true
+              elif ! command -v curl 1>/dev/null; then
+                apt-get install curl --yes
+              else
+                exit 250
+              fi
+
+
+              # https://regex101.com/r/FueTCm/1
+              latest_release="$(curl https://api.github.com/repos/hadolint/hadolint/releases/latest 2>/dev/null | grep tag_name | sed -E "s#^\s+\"\w+\"\:\s+\"v([^\"]+).*#\1#gm")"
+
+              case "$latest_release" in
+                # NOTICE(Krey): Buy me a hatchet and etch 'kindness' on it if they change the versioning and i resolve the issue
+                [0-9].[0-9].[0-9]|[0-9][0-9].[0-9].[0-9]|[0-9][0-9].[0-9][0-9].[0-9]|[0-9][0-9].[0-9][0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9]|[0-9].[0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9][0-9][0-9]|[0-9].[0-9].[0-9][0-9][0-9])
+                  printf 'INFO: %s\n' "GitHub API returned sane latest release '$latest_relaese'"
+                ;;
+                ""|*)
+                  printf 'WARNING: %s\n' "GitHub API was unable to determine sane latest release of hadolint, using hardcoded"
+                  latest="1.18.0"
+              esac
+
+              tries=0
+              while [ "$tries" != 5 ]; do
+                if [ -s /usr/bin/hadolint ]; then
+                  break
+                elif [ ! -f /usr/bin/hadolint ] && [ ! -s /usr/bin/hadolint ]; then
+                  curl -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v$latest/hadolint-Linux-x86_64 || true
+                else
+                  exit 250
+                fi
+
+                [ "$tries" != 5 ] || printf 'FATAL: %s\n' "Unable to get hadolint executable, exitting.."
+                tries="$(( tries + 1 ))"
+              done
+
+              # Check if hadolint is executable
+              if [ ! -x /usr/bin/hadolint ]; then
+                chmod +x /usr/bin/hadolint
+              elif [ -x /usr/bin/hadolint ]; then
+                true
+              else
+                exit 250
+              fi
             fi
           fi
       - name: Linting..
+        # Make sure that bash is used
+        shell: bash
         run: |
-          cd "$GITHUB_WORKSPACE" && for file in $(git ls-tree --name-only -r ${{ github.sha }} | grep '\.Dockerfile$'); do
-            printf 'checking dockerfile %s using hadolint\n' "$file"
-            hadolint "$file"
+          cd "$GITHUB_WORKSPACE"
+
+          # Process files
+          ## NOTICE: Do not use for loop to avoid pitfall https://mywiki.wooledge.org/BashPitfalls#pf1
+          git --git-dir="$GITHUB_WORKSPACE/.git" ls-files -z -- '*.dockerfile' '*.Dockerfile' | while IFS= read -rd '' file; do
+              printf 'linting dockerfile file %s\n' "$file"
+              hadolint "$file"
           done
