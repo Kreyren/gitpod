@@ -6,6 +6,7 @@ on:
     types: [ready_for_review]
     paths:
     - '**.Dockerfile'
+    - '**.dockerfile'
 
 jobs:
   # Linting
