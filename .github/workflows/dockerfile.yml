@@ -68,7 +68,6 @@ jobs:
                 latestRelease="$(printf '%s\n' "$githubApiLatest" | grep tag_name | sed -E "s#^\s+\"\w+\"\:\s+\"v([^\"]+).*#\1#gm")"
 
                 case "$latestRelease" in
-                  # NOTICE(Krey): Buy me a hatchet and etch 'kindness' on it if they change the versioning and i resolve the issue
                   [0-9].[0-9].[0-9]|[0-9][0-9].[0-9].[0-9]|[0-9][0-9].[0-9][0-9].[0-9]|[0-9][0-9].[0-9][0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9]|[0-9].[0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9][0-9]|[0-9].[0-9][0-9].[0-9][0-9][0-9]|[0-9].[0-9].[0-9][0-9][0-9])
                     printf 'INFO: %s\n' "GitHub API returned sane latest release '$latestRelease'"
                   ;;
@@ -82,7 +81,8 @@ jobs:
                   if [ -s /usr/bin/hadolint ]; then
                     break
                   elif [ ! -f /usr/bin/hadolint ] && [ ! -s /usr/bin/hadolint ]; then
-                    wget https://github.com/hadolint/hadolint/releases/download/v$latestRelease/hadolint-Linux-x86_64 -o /usr/bin/hadolint || true
+                    # NOTICE(Krey): We can't use curl because of GitHub's redirects
+                    wget https://github.com/hadolint/hadolint/releases/download/v$latestRelease/hadolint-Linux-x86_64 -O /usr/bin/hadolint || true
                   else
                     exit 250
                   fi
