@@ -23,7 +23,7 @@ jobs:
 
           # Process files
           ## NOTICE: Do not use for loop to avoid pitfall https://mywiki.wooledge.org/BashPitfalls#pf1
-          git --git-dir="$GITHUB_WORKSPACE/.git" ls-files -z -- '*.sh$' '*.bash$' | while IFS= read -rd '' file; do
+          git --git-dir="$GITHUB_WORKSPACE/.git" ls-files -z -- '*.sh' '*.bash' | while IFS= read -rd '' file; do
               printf "Checking file %s for command 'echo'..\\n" "$file"
               # Check if echo is present
               if grep -q "echo " "$file"; then
