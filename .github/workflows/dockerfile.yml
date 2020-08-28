@@ -15,7 +15,6 @@ jobs:
     container: debian:stable
     steps:
       - uses: actions/checkout@v2
-      -
       - name: Installing dependencies..
         shell: bash
         run: |
@@ -35,7 +34,6 @@ jobs:
               else
                 exit 250
               fi
-
 
               # https://regex101.com/r/FueTCm/1
               latest_release="$(curl https://api.github.com/repos/hadolint/hadolint/releases/latest 2>/dev/null | grep tag_name | sed -E "s#^\s+\"\w+\"\:\s+\"v([^\"]+).*#\1#gm")"
